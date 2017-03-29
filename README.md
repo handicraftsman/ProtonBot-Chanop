@@ -24,7 +24,7 @@ Use `\list chanop` for more info.
 
 After checking out the repo, run `bin/setup` to install dependencies. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
-To install this gem onto your local machine, run `bundler exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundler exec rake release \[origin\]`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+To install this gem onto your local machine, run `bundler exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundler exec rake release\[origin\]`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
 
 ## Contributing
 
