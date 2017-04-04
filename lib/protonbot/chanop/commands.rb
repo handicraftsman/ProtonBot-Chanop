@@ -145,7 +145,8 @@ cmd(cmd: 'kick') do |dat|
   end
 end.perm!('kick')
 
-core.help_add('chanop', 'remove', 'remove [chan] <target> [reason]')
+core.help_add('chanop', 'remove', 'remove [chan] <target> [reason]',
+  'Removes target from this/given channel')
 cmd(cmd: 'remove') do |dat|
   case dat[:split].length
   when 0
