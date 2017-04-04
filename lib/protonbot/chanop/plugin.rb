@@ -7,12 +7,9 @@ ProtonBot::Plugin.new do
 
   core.permhash['admin'] << 'chanop'
   core.permhash['chanop'] = %w(
-    kickban
     kick
     remove
     ban
-    arjk
-    arjr
     excempt
     quiet
     umode

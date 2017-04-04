@@ -128,7 +128,7 @@ cmd(cmd: 'unexcempt') do |dat|
   end
 end.perm!('excempt')
 
-core.help_add('chanop', 'kick', 'kick [chan] <target>',
+core.help_add('chanop', 'kick', 'kick [chan] <target> [reason]',
   'Kicks target from this/given channel')
 cmd(cmd: 'kick') do |dat|
   case dat[:split].length
@@ -137,10 +137,15 @@ cmd(cmd: 'kick') do |dat|
   when 1
     dat[:plug].kick(dat[:target], dat[:split][0])
   when 2..512
-    dat[:plug].kick(dat[:split][0], dat[:split][1], dat[:split][2..dat[:split].length-1].join(' '))
+    if %w(# + ! &).include? dat[:split][0][0]
+      dat[:plug].kick(dat[:split][0], dat[:split][1], dat[:split][2..dat[:split].length].join(' '))
+    else
+      dat[:plug].kick(dat[:target], dat[:split][0], dat[:split][1..dat[:split].length].join(' '))
+    end
   end
 end.perm!('kick')
 
+core.help_add('chanop', 'remove', 'remove [chan] <target> [reason]')
 cmd(cmd: 'remove') do |dat|
   case dat[:split].length
   when 0
@@ -148,11 +153,15 @@ cmd(cmd: 'remove') do |dat|
   when 1
     dat[:plug].remove(dat[:target], dat[:split][0])
   when 2..512
-    dat[:plug].remove(dat[:split][0], dat[:split][1], dat[:split][2..dat[:split].length-1].join(' '))
+    if %w(# + ! &).include? dat[:split][0][0]
+      dat[:plug].remove(dat[:split][0], dat[:split][1], dat[:split][2..dat[:split].length].join(' '))
+    else
+      dat[:plug].remove(dat[:target], dat[:split][0], dat[:split][1..dat[:split].length].join(' '))
+    end
   end
 end.perm!('remove')
 
-core.help_add('chanop', 'kban', 'kban [chan] <target>',
+core.help_add('chanop', 'kban', 'kban [chan] <target> [reason]',
   'Kickbans target from this/given channel')
 cmd(cmd: 'kban') do |dat|
   case dat[:split].length
@@ -162,10 +171,35 @@ cmd(cmd: 'kban') do |dat|
     dat[:plug].ban(dat[:target], '*!*@' + dat[:plug].gethost(dat[:split][0]))
     dat[:plug].kick(dat[:target], dat[:split][0])
   when 2..512
-    dat[:plug].ban(dat[:target], '*!*@' + dat[:plug].gethost(dat[:split][1]))
-    dat[:plug].kick(dat[:split][0], dat[:split][1], dat[:split][2..dat[:split].length-1].join(' '))
+    if %w(# + ! &).include? dat[:split][0][0]
+      dat[:plug].ban(dat[:split][0], '*!*@' + dat[:plug].gethost(dat[:split][1]))
+      dat[:plug].kick(dat[:split][0], dat[:split][1], dat[:split][2..dat[:split].length].join(' '))
+    else
+      dat[:plug].ban(dat[:target], '*!*@' + dat[:plug].gethost(dat[:split][0]))
+      dat[:plug].kick(dat[:target], dat[:split][0], dat[:split][1..dat[:split].length].join(' '))
+    end
   end
-end.perm!('kickban')
+end.perm!('kick', 'ban')
+
+core.help_add('chanop', 'rban', 'rban [chan] <target> [reason]',
+  'Removebans target from this/given channel')
+cmd(cmd: 'rban') do |dat|
+  case dat[:split].length
+  when 0
+    dat.nreply 'Not enough parameters!'
+  when 1
+    dat[:plug].ban(dat[:target], '*!*@' + dat[:plug].gethost(dat[:split][0]))
+    dat[:plug].remove(dat[:target], dat[:split][0])
+  when 2..512
+    if %w(# + ! &).include? dat[:split][0][0]
+      dat[:plug].ban(dat[:split][0], '*!*@' + dat[:plug].gethost(dat[:split][1]))
+      dat[:plug].remove(dat[:split][0], dat[:split][1], dat[:split][2..dat[:split].length].join(' '))
+    else
+      dat[:plug].ban(dat[:target], '*!*@' + dat[:plug].gethost(dat[:split][0]))
+      dat[:plug].remove(dat[:target], dat[:split][0], dat[:split][1..dat[:split].length].join(' '))
+    end
+  end
+end.perm!('remove', 'ban')
 
 core.help_add('chanop', 'arjk', 'arjk [chan] <target>',
   'Anti-Rejoin-Kicks target from this/given channel')
@@ -179,12 +213,19 @@ cmd(cmd: 'arjk') do |dat|
     sleep(5)
     dat[:plug].unban(dat[:target], '*!*@' + dat[:plug].gethost(dat[:split][0]))
   when 2..512
-    dat[:plug].ban(dat[:target], '*!*@' + dat[:plug].gethost(dat[:split][1]))
-    dat[:plug].kick(dat[:split][0], dat[:split][1], dat[:split][2..dat[:split].length-1].join(' '))
-    sleep(5)
-    dat[:plug].unban(dat[:target], '*!*@' + dat[:plug].gethost(dat[:split][1]))
+    if %w(# + ! &).include? dat[:split][0][0]
+      dat[:plug].ban(dat[:target], '*!*@' + dat[:plug].gethost(dat[:split][1]))
+      dat[:plug].kick(dat[:split][0], dat[:split][1], dat[:split][2..dat[:split].length].join(' '))
+      sleep(5)
+      dat[:plug].unban(dat[:target], '*!*@' + dat[:plug].gethost(dat[:split][1]))
+    else
+      dat[:plug].ban(dat[:target], '*!*@' + dat[:plug].gethost(dat[:split][0]))
+      dat[:plug].kick(dat[:target], dat[:split][0], dat[:split][1..dat[:split].length].join(' '))
+      sleep(5)
+      dat[:plug].unban(dat[:target], '*!*@' + dat[:plug].gethost(dat[:split][0]))
+    end
   end
-end.perm!('arjk')
+end.perm!('kick', 'ban')
 
 core.help_add('chanop', 'arjr', 'arjr [chan] <target>',
   'Anti-Rejoin-Removes target from this/given channel')
@@ -198,12 +239,19 @@ cmd(cmd: 'arjr') do |dat|
     sleep(5)
     dat[:plug].unban(dat[:target], '*!*@' + dat[:plug].gethost(dat[:split][0]))
   when 2..512
-    dat[:plug].ban(dat[:target], '*!*@' + dat[:plug].gethost(dat[:split][1]))
-    dat[:plug].remove(dat[:split][0], dat[:split][1], dat[:split][2..dat[:split].length-1].join(' '))
-    sleep(5)
-    dat[:plug].unban(dat[:target], '*!*@' + dat[:plug].gethost(dat[:split][1]))
+    if %w(# + ! &).include? dat[:split][0][0]
+      dat[:plug].ban(dat[:target], '*!*@' + dat[:plug].gethost(dat[:split][1]))
+      dat[:plug].remove(dat[:split][0], dat[:split][1], dat[:split][2..dat[:split].length].join(' '))
+      sleep(5)
+      dat[:plug].unban(dat[:target], '*!*@' + dat[:plug].gethost(dat[:split][1]))
+    else
+      dat[:plug].ban(dat[:target], '*!*@' + dat[:plug].gethost(dat[:split][0]))
+      dat[:plug].remove(dat[:target], dat[:split][0], dat[:split][1..dat[:split].length].join(' '))
+      sleep(5)
+      dat[:plug].unban(dat[:target], '*!*@' + dat[:plug].gethost(dat[:split][0]))
+    end
   end
-end.perm!('arjr')
+end.perm!('remove', 'ban')
 
 core.help_add('chanop', 'umode', 'umode [chan] <user> <mode>',
   'Sets given mode on given user at this/given channel')
@@ -214,15 +262,15 @@ cmd(cmd: 'umode') do |dat|
   when 2
     unless /[+-]/ =~ dat[:split][1][0]
       dat.nreply 'Wrong mode!'
-      break
+    else
+      dat[:plug].usermode(dat[:target], dat[:split][0], dat[:split][1])
     end
-    dat[:plug].usermode(dat[:target], dat[:split][0], dat[:split][1])
   when 3..512
     unless /[+-]/ =~ dat[:split][2][0]
       dat.nreply 'Wrong mode!'
-      break
+    else
+      dat[:plug].usermode(dat[:split][0], dat[:split][1], dat[:split][2])
     end
-    dat[:plug].usermode(dat[:split][0], dat[:split][1], dat[:split][2])
   end
 end.perm!('umode')
 
