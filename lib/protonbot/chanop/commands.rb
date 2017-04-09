@@ -275,7 +275,7 @@ cmd(cmd: 'umode') do |dat|
   end
 end.perm!('umode')
 
-core.help_add('chanop', 'umode', 'umode [chan] <mode>',
+core.help_add('chanop', 'cmode', 'cmode [chan] <mode>',
   'Sets given mode on this/given channel')
 cmd(cmd: 'cmode') do |dat|
   case dat[:split].length
